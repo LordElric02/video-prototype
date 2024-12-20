@@ -1,4 +1,6 @@
 import  admin  from 'firebase-admin';
+import { storage } from './firebase.js';
+import { ref, uploadBytes,  getDownloadURL } from 'firebase/storage'
 import fs from 'fs';
 import { v4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
@@ -14,7 +16,7 @@ admin.initializeApp({
 });
 
 // Function to download file from Firebase Storage
-export const downloadFile = async (filePath, destination) => {
+export const downloadFile = async (filePath, destination,fileUrl) => {
   outputVideoFile = destination;
   const bucket = admin.storage().bucket();
   const file = bucket.file(filePath);
@@ -29,12 +31,12 @@ export const downloadFile = async (filePath, destination) => {
     })
     .on('finish', () => {
       console.log(`Watchclub File downloaded to ${destination}`);
-      createThumbnail(destination);
+      createThumbnail(destination, fileUrl);
     })
     .pipe(destFileStream);
 };
 
-export const createThumbnail = async (outputVideoPath) => {    
+export const createThumbnail = async (outputVideoPath,fileUrl) => {    
     const bucket = admin.storage().bucket();
  
     const thumbnailTime   = 5;
@@ -48,7 +50,7 @@ export const createThumbnail = async (outputVideoPath) => {
       .output(outputThmbnailPath)
       .on("end", () => {
           console.log(`Thumbnail created successfully:${outputThmbnailPath}`);
-          uploadThumbnail(outputThmbnailPath);
+          uploadThumbnail(outputThmbnailPath, fileUrl);
       })
       .run();
   
@@ -60,17 +62,42 @@ export const createThumbnail = async (outputVideoPath) => {
 
   }
 
-  export const uploadThumbnail = async (thumbnailPath) => {
+  export const uploadThumbnail = async (thumbnailPath, fileUrl) => {
 
     const bucket = admin.storage().bucket();
+    const thumbnailPrefix = 'thumbnails/';
+    const thumbnailSuffix = `thumbnails_${v4()}`;
+    const thumbnailName = thumbnailPrefix + thumbnailSuffix;
       // Upload the processed file to storage
     await bucket.upload(thumbnailPath, {
-      destination: 'thumbnails/' + `thumbnailPath${v4()}`,
+      destination: thumbnailName,
       contentType: 'image/jpeg'
 
     });
 
+    console.log(`video url:${fileUrl}`);
+    console.log (`thumbnail url:${generateThumbnailUrl(thumbnailSuffix)}`);
     // Delete the temporary files
     fs.unlinkSync(outputVideoFile);
     fs.unlinkSync(outputThmbnailPath);   
   };
+
+ 
+    await uploadBytes(videosListRef, videoUpload,metadata).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then(async (url) => {
+        // //generate 
+        console.log(`thumbnail url firebase: ${url}`);
+        console.log(`video url in firebase: ${fileUrl}`);
+      })
+      
+    });
+  };
+
+  const generateThumbnailUrl =  (fileUrl) => {
+    const thumbnailFileTemplate = "https://firebasestorage.googleapis.com/v0/b/watch-video-45073.firebasestorage.app/o/thumbnails%2FTOKEN?alt=media&token=d4cdedd4-1e4c-444a-a674-24610cc201ef";
+    const thumbnailUrl = thumbnailFileTemplate.replace('TOKEN', fileUrl);
+    return thumbnailUrl;
+  }
+
+  
+

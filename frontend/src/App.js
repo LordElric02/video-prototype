@@ -24,14 +24,14 @@ function App() {
 
   const uploadVideo = () => {  
       if(videoUpload === null) return null;
-      const videosListRef = ref(storage, `videos/${videoUpload.name +  v4()}`);  
+      const videosListRef = ref(storage, `videos/uploadvideos_${ v4()}`);  
       uploadBytes(videosListRef, videoUpload).then((snapshot) => {
         getDownloadURL(snapshot.ref).then(async (url) => {
           //generate 
           setVideoList((prev) => [...prev, url]); 
           const fileName = firebaseName(url);
-          const response = await axios.get(`http://localhost:5000/api/videos/GenerateThumbnail?filebaseName=${fileName}`);
-          console.log(`file name: ${fileName}`);
+          const encodedUrl = encodeURIComponent(url);
+          const response = await axios.get(`http://localhost:5000/api/videos/GenerateThumbnail?filebaseName=${fileName}&fileUrl=${encodedUrl}`);
         })
         
       });
