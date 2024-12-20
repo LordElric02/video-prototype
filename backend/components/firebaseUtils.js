@@ -1,10 +1,10 @@
 import  admin  from 'firebase-admin';
-import { storage } from './firebase.js';
-import { ref, uploadBytes,  getDownloadURL } from 'firebase/storage'
 import fs from 'fs';
 import { v4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
 import serviceAccount  from "../Data/serviceAccountKey.json"  assert { type: 'json' };
+import { createRecord } from "./firebaseDB.js";
+import { getRecentApprovedVideos } from "./approvedVideos.js";
 
 const outputThmbnailPath = `${process.cwd()}/video/thumbnail${v4()}.jpg`;
 let outputVideoFile = '';
@@ -12,7 +12,8 @@ let outputVideoFile = '';
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'watch-video-45073.firebasestorage.app' // Replace with your bucket name
+  storageBucket: 'watch-video-45073.firebasestorage.app',
+  databaseURL: 'https://watch-video-45073-default-rtdb.firebaseio.com'
 });
 
 // Function to download file from Firebase Storage
@@ -74,23 +75,12 @@ export const createThumbnail = async (outputVideoPath,fileUrl) => {
       contentType: 'image/jpeg'
 
     });
+    
+    saveToDatabase(fileUrl, generateThumbnailUrl(thumbnailSuffix));
 
-    console.log(`video url:${fileUrl}`);
-    console.log (`thumbnail url:${generateThumbnailUrl(thumbnailSuffix)}`);
     // Delete the temporary files
     fs.unlinkSync(outputVideoFile);
     fs.unlinkSync(outputThmbnailPath);   
-  };
-
- 
-    await uploadBytes(videosListRef, videoUpload,metadata).then((snapshot) => {
-      getDownloadURL(snapshot.ref).then(async (url) => {
-        // //generate 
-        console.log(`thumbnail url firebase: ${url}`);
-        console.log(`video url in firebase: ${fileUrl}`);
-      })
-      
-    });
   };
 
   const generateThumbnailUrl =  (fileUrl) => {
@@ -99,5 +89,23 @@ export const createThumbnail = async (outputVideoPath,fileUrl) => {
     return thumbnailUrl;
   }
 
-  
+  const saveToDatabase = async (videoUrl, thumbnail) => {
+    const videoPath = `videos/video_${v4()}`; // Define the path in the database
+    const videoId = v4();
+    const videoData = {
+      id: videoId,
+      videoUrl: videoUrl,
+      thumbnailUrl: thumbnail,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      createdBy:'system',
+      group:'Group A',
+      approved: true  
+    };    
+    await createRecord(admin, videoPath, videoData);
+  }
+
+  export const recordecentApprovedVideos = async () => {
+        return getRecentApprovedVideos(admin);
+  }
 

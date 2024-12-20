@@ -1,7 +1,6 @@
 import Router from 'express';
 import { v4 } from 'uuid';
-import { downloadFile } from '../components/firebaseUtils.js';
-import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage'
+import { downloadFile, recordecentApprovedVideos } from '../components/firebaseUtils.js';
 //import verifyToken   from '../middlewares/auth.js';
 
 const router = Router();
@@ -28,6 +27,12 @@ router.get('/GenerateThumbnail', async (req, res) => {
         res.status(200).json({
           success: true,      });
   
+})
+
+router.get('/', async (req, res) => {
+      const videos = await recordecentApprovedVideos();
+      res.json(videos);
+      res.status(200).json(videos);
 })
 
 
