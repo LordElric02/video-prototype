@@ -1,26 +1,18 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { storage } from './firebase';
 import { ref, uploadBytes,  getDownloadURL } from 'firebase/storage'
 import { v4 } from 'uuid';
 import { firebaseName } from './Utils/fileNameExtractor'
 import axios from 'axios';
-import VideoCarousel from './components/videoCarousel';
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
+import VideoPlayer from './components/VideoPlayer';
 
 function App() {
   const [videoUpload  , setVideoUpload] = useState(null);
-  const [videoList,setVideoList] = useState([]);
+  const [videolist, setVideoList] = useState([]);
 
-  const videosListRef = ref(storage, 'thumbnails/');  
-
-  useEffect(() => {
-    const response =  axios.get(`http://localhost:5000/api/videos/`);
-    response.then((res) => {
-      console.log(`data: ${res}`); 
-      // setVideoList(res.json ());
-    })
-        
-  },[]); 
 
   const uploadVideo = () => {  
       if(videoUpload === null) return null;
@@ -43,9 +35,9 @@ function App() {
     <div className="App">
        <input type="file" onChange={(e) => setVideoUpload(e.target.files[0])} />
       <button onClick={uploadVideo}>Upload image</button>
-      {/* <VideoCarousel videos={videoList} /> */}
+      <VideoPlayer />
     </div>
   );
-}
+} 
 
 export default App; 

@@ -11,8 +11,6 @@ router.get('/GenerateThumbnail', async (req, res) => {
       const filePath = req.query.filebaseName; 
       const fileUrl = req.query.fileUrl;
 
-      console.log(`filePath: ${fileUrl}`);  
-      
       const outputVideoPath = `${process.cwd()}/Video/firebasevideo${v4()}.mp4`;
       
       //download video
@@ -30,9 +28,14 @@ router.get('/GenerateThumbnail', async (req, res) => {
 })
 
 router.get('/', async (req, res) => {
+      
+      // Set the Content-Type header to application/json
+      res.setHeader('Content-Type', 'application/json');
       const videos = await recordecentApprovedVideos();
-      res.json(videos);
-      res.status(200).json(videos);
+      const jsonvideos =JSON.stringify(videos);
+
+      res.json(jsonvideos);
+      
 })
 
 

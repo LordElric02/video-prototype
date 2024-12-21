@@ -5,6 +5,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import serviceAccount  from "../Data/serviceAccountKey.json"  assert { type: 'json' };
 import { createRecord } from "./firebaseDB.js";
 import { getRecentApprovedVideos } from "./approvedVideos.js";
+import { title } from 'process';
 
 const outputThmbnailPath = `${process.cwd()}/video/thumbnail${v4()}.jpg`;
 let outputVideoFile = '';
@@ -31,7 +32,6 @@ export const downloadFile = async (filePath, destination,fileUrl) => {
       console.error('Error downloading file:', err);
     })
     .on('finish', () => {
-      console.log(`Watchclub File downloaded to ${destination}`);
       createThumbnail(destination, fileUrl);
     })
     .pipe(destFileStream);
@@ -50,7 +50,6 @@ export const createThumbnail = async (outputVideoPath,fileUrl) => {
       .size("300x300")    
       .output(outputThmbnailPath)
       .on("end", () => {
-          console.log(`Thumbnail created successfully:${outputThmbnailPath}`);
           uploadThumbnail(outputThmbnailPath, fileUrl);
       })
       .run();
@@ -95,6 +94,7 @@ export const createThumbnail = async (outputVideoPath,fileUrl) => {
     const videoData = {
       id: videoId,
       videoUrl: videoUrl,
+      title: `Video ${videoId}`,
       thumbnailUrl: thumbnail,
       createdAt: Date.now(),
       updatedAt: Date.now(),

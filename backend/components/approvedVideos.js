@@ -1,3 +1,4 @@
+import { title } from "process";
 
 // Function to get videos
 export const getRecentApprovedVideos = async (admin) => {
@@ -20,12 +21,12 @@ export const getRecentApprovedVideos = async (admin) => {
             id: childSnapshot.key,
             thumbnailUrl: video.thumbnailUrl,
             videoUrl: video.videoUrl,
+            title: video.title,
             thumbnail: video.thumbnail
             });
         }
         });
 
-        console.log('Recent approved videos:', videos);
         return videos;
     } catch (error) {
         console.error('Error fetching videos:', error);
