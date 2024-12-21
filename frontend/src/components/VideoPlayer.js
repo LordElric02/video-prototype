@@ -1,18 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { v4 } from 'uuid';
-import { storage } from '../firebase';
-import { ref, uploadBytes,  getDownloadURL } from 'firebase/storage'
-import { firebaseName } from '../Utils/fileNameExtractor'
-
-// Sample video data
 
 const VideoPlayer  =() =>{
   const [videos, setVideoList] = useState([]); 
   const [currentVideo, setCurrentVideo] = useState(null);
-
-  //console.log(`testdata: ${testdata[0]}`);
-
 
   useEffect(() => {
     const fetchVideos = async () => {
