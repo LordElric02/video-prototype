@@ -11,12 +11,8 @@ import { v4 } from 'uuid';
 import { storage } from './firebase';
 import axios from 'axios';
 import { firebaseName } from '../Utils/fileNameExtractor'
-import  { useAuth } from './AuthContext';
-import { FileUpload}  from './UploadFileAndWait'
-
 
 export const UploadVideoMui = () => {
-    const { user, login, logout } = useAuth();
     const [videoUpload  , setVideoUpload] = useState(null);
     const uploadVideo = () => {  
         if(videoUpload === null) return null;

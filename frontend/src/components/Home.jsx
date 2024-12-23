@@ -13,7 +13,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import { UploadVideoMui } from './UploadVideoMui';
+import {FileUpload } from './UploadFileAndWait';
 import Typography from '@mui/material/Typography';
 import SearchVideos from './SearchVideos';
 import    { useState } from 'react';
@@ -49,6 +49,7 @@ const theme = createTheme({
 
 function Home() {
   const { user, login, logout } = useAuth();
+  const [shouldFetch, setShouldFetch] = useState(false);
 
   return (
       <Container>
@@ -73,7 +74,7 @@ function Home() {
                           <VideoPlayer />
                       </Grid2>
                       <Grid2 item xs={4}> {/* D will take the remaining space */}
-                          <UploadVideoMui />
+                          <FileUpload />
                       </Grid2>
                   </Grid2>
           </Grid2>

@@ -1,53 +1,84 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Button, TextField, Snackbar, Alert } from '@mui/material';
+import Input from '@mui/material/Input';
+import { ref, uploadBytes,  getDownloadURL } from 'firebase/storage'
+import { storage } from './firebase';
+import { v4 } from 'uuid';
+import { firebaseName } from '../Utils/fileNameExtractor'
 
-export const FileUpload = (thumbnailEndpoint) => {
+
+export const FileUpload = () => {
   const [file, setFile] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
 
   const handleUpload = async () => {
+    const thumbnailEndpoint = ''; // This should be defined after you create the URL.
+    
     if (!file) {
-      toast.error('Please select a file to upload.');
+      setSnackbarMessage('Please select a file to upload.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
       return;
     }
-
-    // Show "Processing" toast
-    const toastId = toast.info('Processing...', {
-      autoClose: false, // Prevent auto close
-      closeOnClick: false,
-      draggable: false,
-    });
-
+  
+    setSnackbarMessage('Processing...');
+    setSnackbarSeverity('info');
+    setSnackbarOpen(true);
+  
+    const videosListRef = ref(storage, `videos/uploadvideos_${ v4()}`);  
+  
     try {
-      // Replace with your API endpoint
+      const snapshot = await uploadBytes(videosListRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      
+      // Generate the file name and thumbnail endpoint
+      const fileName = firebaseName(url);
+      const encodedUrl = encodeURIComponent(url);
+      const thumbnailEndpoint = `http://localhost:5000/api/videos/GenerateThumbnail?filebaseName=${fileName}&fileUrl=${encodedUrl}`;
+  
+      // Now, make the API call
       await axios.get(thumbnailEndpoint);
-
-      // On success, update the toast
-      toast.update(toastId, {
-        render: 'File uploaded successfully!',
-        type: toast.TYPE.SUCCESS,
-        autoClose: 3000,
-      });
+  
+      // On success, update the snackbar message
+      setSnackbarMessage('File uploaded successfully!');
+      setSnackbarSeverity('success');
     } catch (error) {
-      // On error, update the toast
-      toast.update(toastId, {
-        render: 'Error uploading file.',
-        type: toast.TYPE.ERROR,
-        autoClose: 3000,
-      });
+      // On error, update the snackbar message
+      setSnackbarMessage('Error uploading file.');
+      setSnackbarSeverity('error');
     }
+  };
+  
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
+      <Input type="file" onChange={handleFileChange} />
+      <Button variant="contained" onClick={handleUpload}>
+        Upload
+      </Button>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbarSeverity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
-};;
+}
