@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import  { ThumbnailGallery } from './ThumnnailGallery';
 
 const VideoPlayer  =() =>{
   const [videos, setVideoList] = useState([]); 
@@ -30,19 +31,10 @@ const VideoPlayer  =() =>{
   };
 
   return (
-    <div style={styles.container}>
+    <div>
       <video controls style={styles.video} src={currentVideo} />
-      <div style={styles.thumbnailContainer}>
-        {videos.map((video, index) => (
-          <img
-            key={index}
-            src={video.thumbnailUrl}
-            alt={`Thumbnail ${index + 1}`}
-            style={styles.thumbnail}
-            onClick={() => handleThumbnailClick(video.videoUrl)}
-          />
-        ))}
-      </div>
+      
+        <ThumbnailGallery videos={videos} handleThumbnailClick={handleThumbnailClick} />
     </div>
   );
 }
